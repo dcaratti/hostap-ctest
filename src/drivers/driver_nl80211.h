@@ -93,7 +93,9 @@ struct wpa_driver_nl80211_data {
 	int if_removed;
 	int if_disabled;
 	int ignore_if_down_event;
+#ifdef CONFIG_RFKILL
 	struct rfkill_data *rfkill;
+#endif
 	struct wpa_driver_capa capa;
 	u8 *extended_capa, *extended_capa_mask;
 	unsigned int extended_capa_len;

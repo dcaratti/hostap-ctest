@@ -36,7 +36,9 @@
 #include "linux_ioctl.h"
 #include "radiotap.h"
 #include "radiotap_iter.h"
+#ifdef CONFIG_RFKILL
 #include "rfkill.h"
+#endif
 #include "driver_nl80211.h"
 
 
@@ -1675,6 +1677,7 @@ static void nl80211_check_global(struct nl80211_global *global)
 }
 
 
+#ifdef CONFIG_RFKILL
 static void wpa_driver_nl80211_rfkill_blocked(void *ctx)
 {
 	struct wpa_driver_nl80211_data *drv = ctx;
@@ -1710,6 +1713,7 @@ static void wpa_driver_nl80211_rfkill_unblocked(void *ctx)
 	if (drv->nlmode == NL80211_IFTYPE_P2P_DEVICE)
 		wpa_supplicant_event(drv->ctx, EVENT_INTERFACE_ENABLED, NULL);
 }
+#endif
 
 
 static void wpa_driver_nl80211_handle_eapol_tx_status(int sock,
@@ -1793,6 +1797,7 @@ static void nl80211_destroy_bss(struct i802_bss *bss)
 }
 
 
+#ifdef CONFIG_RFKILL
 static void
 wpa_driver_nl80211_drv_init_rfkill(struct wpa_driver_nl80211_data *drv)
 {
@@ -1844,6 +1849,7 @@ wpa_driver_nl80211_drv_init_rfkill(struct wpa_driver_nl80211_data *drv)
 		os_free(rcfg);
 	}
 }
+#endif
 
 
 static void * wpa_driver_nl80211_drv_init(void *ctx, const char *ifname,
@@ -2342,10 +2348,12 @@ static void nl80211_mgmt_unsubscribe(struct i802_bss *bss, const char *reason)
 }
 
 
+#ifdef CONFIG_RFKILL
 static void wpa_driver_nl80211_send_rfkill(void *eloop_ctx, void *timeout_ctx)
 {
 	wpa_supplicant_event(timeout_ctx, EVENT_INTERFACE_DISABLED, NULL);
 }
+#endif
 
 
 static void nl80211_del_p2pdev(struct i802_bss *bss)
@@ -2454,7 +2462,9 @@ wpa_driver_nl80211_finish_drv_init(struct wpa_driver_nl80211_data *drv,
 				   const char *driver_params)
 {
 	struct i802_bss *bss = drv->first_bss;
+#ifdef CONFIG_RFKILL
 	int send_rfkill_event = 0;
+#endif
 	enum nl80211_iftype nlmode;
 
 	drv->ifindex = if_nametoindex(bss->ifname);
@@ -2508,9 +2518,12 @@ wpa_driver_nl80211_finish_drv_init(struct wpa_driver_nl80211_data *drv,
 	if (nlmode == NL80211_IFTYPE_P2P_DEVICE)
 		nl80211_get_macaddr(bss);
 
+#ifdef CONFIG_RFKILL
 	wpa_driver_nl80211_drv_init_rfkill(drv);
 
-	if (!rfkill_is_blocked(drv->rfkill)) {
+	if (!rfkill_is_blocked(drv->rfkill))
+#endif
+	{
 		int ret = i802_set_iface_flags(bss, 1);
 		if (ret) {
 			wpa_printf(MSG_ERROR, "nl80211: Could not set "
@@ -2524,7 +2537,9 @@ wpa_driver_nl80211_finish_drv_init(struct wpa_driver_nl80211_data *drv,
 
 		if (nlmode == NL80211_IFTYPE_P2P_DEVICE)
 			return ret;
-	} else {
+	}
+#ifdef CONFIG_RFKILL
+	else {
 		wpa_printf(MSG_DEBUG, "nl80211: Could not yet enable "
 			   "interface '%s' due to rfkill", bss->ifname);
 		if (nlmode != NL80211_IFTYPE_P2P_DEVICE)
@@ -2532,6 +2547,7 @@ wpa_driver_nl80211_finish_drv_init(struct wpa_driver_nl80211_data *drv,
 
 		send_rfkill_event = 1;
 	}
+#endif
 
 	if (!drv->hostapd && nlmode != NL80211_IFTYPE_P2P_DEVICE)
 		netlink_send_oper_ifla(drv->global->netlink, drv->ifindex,
@@ -2544,10 +2560,12 @@ wpa_driver_nl80211_finish_drv_init(struct wpa_driver_nl80211_data *drv,
 		os_memcpy(drv->perm_addr, bss->addr, ETH_ALEN);
 	}
 
+#ifdef CONFIG_RFKILL
 	if (send_rfkill_event) {
 		eloop_register_timeout(0, 0, wpa_driver_nl80211_send_rfkill,
 				       drv, drv->ctx);
 	}
+#endif
 
 	if (drv->vendor_cmd_test_avail)
 		qca_vendor_test(drv);
@@ -2636,8 +2654,10 @@ static void wpa_driver_nl80211_deinit(struct i802_bss *bss)
 
 	netlink_send_oper_ifla(drv->global->netlink, drv->ifindex, 0,
 			       IF_OPER_UP);
+#ifdef CONFIG_RFKILL
 	eloop_cancel_timeout(wpa_driver_nl80211_send_rfkill, drv, drv->ctx);
 	rfkill_deinit(drv->rfkill);
+#endif
 
 	eloop_cancel_timeout(wpa_driver_nl80211_scan_timeout, drv, drv->ctx);
 
@@ -8961,9 +8981,12 @@ static int nl80211_set_wowlan(void *priv,
 	    (triggers->eap_identity_req &&
 	     nla_put_flag(msg, NL80211_WOWLAN_TRIG_EAP_IDENT_REQUEST)) ||
 	    (triggers->four_way_handshake &&
-	     nla_put_flag(msg, NL80211_WOWLAN_TRIG_4WAY_HANDSHAKE)) ||
-	    (triggers->rfkill_release &&
-	     nla_put_flag(msg, NL80211_WOWLAN_TRIG_RFKILL_RELEASE))) {
+	     nla_put_flag(msg, NL80211_WOWLAN_TRIG_4WAY_HANDSHAKE))
+#ifdef CONFIG_RFKILL
+	    || (triggers->rfkill_release &&
+	     nla_put_flag(msg, NL80211_WOWLAN_TRIG_RFKILL_RELEASE))
+#endif
+	) {
 		nlmsg_free(msg);
 		return -ENOBUFS;
 	}

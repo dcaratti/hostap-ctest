@@ -44,7 +44,6 @@ NEED_SME=y
 NEED_AP_MLME=y
 NEED_NETLINK=y
 NEED_LINUX_IOCTL=y
-NEED_RFKILL=y
 NEED_RADIOTAP=y
 
 ifdef CONFIG_LIBNL32
@@ -120,7 +119,6 @@ DRV_WPA_CFLAGS += -DCONFIG_DRIVER_WEXT
 CONFIG_WIRELESS_EXTENSION=y
 NEED_NETLINK=y
 NEED_LINUX_IOCTL=y
-NEED_RFKILL=y
 endif
 
 ifdef CONFIG_DRIVER_NDIS
@@ -146,7 +144,6 @@ endif
 ifdef CONFIG_WIRELESS_EXTENSION
 DRV_WPA_CFLAGS += -DCONFIG_WIRELESS_EXTENSION
 DRV_WPA_OBJS += src/drivers/driver_wext.c
-NEED_RFKILL=y
 endif
 
 ifdef NEED_NETLINK
@@ -157,12 +154,13 @@ ifdef NEED_LINUX_IOCTL
 DRV_OBJS += src/drivers/linux_ioctl.c
 endif
 
-ifdef NEED_RFKILL
-DRV_OBJS += src/drivers/rfkill.c
-endif
-
 ifdef NEED_RADIOTAP
 DRV_OBJS += src/utils/radiotap.c
+endif
+
+ifdef CONFIG_RFKILL
+DRV_CFLAGS += -DCONFIG_RFKILL
+DRV_OBJS += src/drivers/rfkill.c
 endif
 
 ifdef CONFIG_DRIVER_CUSTOM

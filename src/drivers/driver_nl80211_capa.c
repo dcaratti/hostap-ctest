@@ -526,8 +526,10 @@ static void wiphy_info_wowlan_triggers(struct wpa_driver_capa *capa,
 		capa->wowlan_triggers.eap_identity_req = 1;
 	if (triggers[NL80211_WOWLAN_TRIG_4WAY_HANDSHAKE])
 		capa->wowlan_triggers.four_way_handshake = 1;
+#ifdef CONFIG_RFKILL
 	if (triggers[NL80211_WOWLAN_TRIG_RFKILL_RELEASE])
 		capa->wowlan_triggers.rfkill_release = 1;
+#endif
 }
 
 

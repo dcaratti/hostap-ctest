@@ -202,8 +202,11 @@ wpa_get_wowlan_triggers(const char *wowlan_triggers,
 		    !CHECK_TRIGGER(magic_pkt) &&
 		    !CHECK_TRIGGER(gtk_rekey_failure) &&
 		    !CHECK_TRIGGER(eap_identity_req) &&
-		    !CHECK_TRIGGER(four_way_handshake) &&
-		    !CHECK_TRIGGER(rfkill_release)) {
+		    !CHECK_TRIGGER(four_way_handshake)
+#ifdef CONFIG_RFKILL
+		    && !CHECK_TRIGGER(rfkill_release)
+#endif
+		) {
 			wpa_printf(MSG_DEBUG,
 				   "Unknown/unsupported wowlan trigger '%s'",
 				   start);

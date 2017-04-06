@@ -1100,7 +1100,9 @@ struct wowlan_triggers {
 	u8 gtk_rekey_failure;
 	u8 eap_identity_req;
 	u8 four_way_handshake;
+#ifdef CONFIG_RFKILL
 	u8 rfkill_release;
+#endif
 };
 
 struct wpa_driver_ap_params {
