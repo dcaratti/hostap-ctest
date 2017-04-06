@@ -32,8 +32,9 @@
 #define MKA_ALIGN_LENGTH(len) (((len) + 0x3) & ~0x3)
 
 /* IEEE Std 802.1X-2010, Table 9-1 - MKA Algorithm Agility */
-#define MKA_ALGO_AGILITY_2009 { 0x00, 0x80, 0xC2, 0x01 }
-static u8 mka_algo_agility[4] = MKA_ALGO_AGILITY_2009;
+/* IEEE Std 802.1Xbx-2014, Table 9-1 - MKA Algorithm Agility */
+#define MKA_ALGO_AGILITY_2010 { 0x00, 0x80, 0xC2, 0x01 }
+static u8 mka_algo_agility[4] = MKA_ALGO_AGILITY_2010;
 
 /* IEEE802.1AE-2006 Table 14-1 MACsec Cipher Suites */
 static struct macsec_ciphersuite cipher_suite_tbl[] = {
@@ -51,7 +52,7 @@ static struct macsec_ciphersuite cipher_suite_tbl[] = {
 
 static struct mka_alg mka_alg_tbl[] = {
 	{
-		.parameter = MKA_ALGO_AGILITY_2009,
+		.parameter = MKA_ALGO_AGILITY_2010,
 
 		/* 128-bit CAK, KEK, ICK, ICV */
 		.cak_len = DEFAULT_ICV_LEN,
