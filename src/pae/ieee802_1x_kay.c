@@ -1668,9 +1668,11 @@ ieee802_1x_mka_icv_body_present(struct ieee802_1x_mka_participant *participant)
 static int
 ieee802_1x_mka_get_icv_length(struct ieee802_1x_mka_participant *participant)
 {
-	int length;
+	int length = 0;
 
-	length = sizeof(struct ieee802_1x_mka_icv_body);
+	/* determine if we need space for the ICV Indicator */
+	if (mka_alg_tbl[participant->kay->mka_algindex].icv_len != DEFAULT_ICV_LEN)
+		length = sizeof(struct ieee802_1x_mka_icv_body);
 	length += mka_alg_tbl[participant->kay->mka_algindex].icv_len;
 
 	return MKA_ALIGN_LENGTH(length);
@@ -1885,7 +1887,7 @@ static struct mka_param_body_handler mka_body_handler[] = {
 		.body_present = NULL
 	},
 
-	/* icv parameter set */
+	/* icv indicator */
 	{
 		.body_tx      = ieee802_1x_mka_encode_icv_body,
 		.body_rx      = NULL,
