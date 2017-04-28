@@ -949,6 +949,30 @@ nl80211_find_drv(struct nl80211_global *global, int idx, u8 *buf, size_t len,
 	return NULL;
 }
 
+static void nl80211_refresh_mac(struct wpa_driver_nl80211_data *drv,
+				int ifindex)
+{
+	struct i802_bss *bss;
+	u8 addr[ETH_ALEN];
+
+	bss = get_bss_ifindex(drv, ifindex);
+	if (bss &&
+	    linux_get_ifhwaddr(drv->global->ioctl_sock,
+			       bss->ifname, addr) < 0) {
+		wpa_printf(MSG_DEBUG,
+			   "nl80211: %s: failed to re-read MAC address",
+			   bss->ifname);
+	} else if (bss &&
+		   os_memcmp(addr, bss->addr, ETH_ALEN) != 0) {
+		wpa_printf(MSG_DEBUG,
+			   "nl80211: Own MAC address on ifindex %d (%s) changed from "
+			    MACSTR " to " MACSTR,
+			    ifindex, bss->ifname,
+			    MAC2STR(bss->addr),
+			    MAC2STR(addr));
+		os_memcpy(bss->addr, addr, ETH_ALEN);
+	}
+}
 
 static void nl80211_refresh_mac(struct wpa_driver_nl80211_data *drv,
 				int ifindex)
