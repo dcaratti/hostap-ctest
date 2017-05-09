@@ -1980,8 +1980,16 @@ static int wpa_config_parse_mka_ckn(const struct parse_data *data,
 				    struct wpa_ssid *ssid, int line,
 				    const char *value)
 {
-	if (hexstr2bin(value, ssid->mka_ckn, MACSEC_CKN_LEN) ||
-	    value[MACSEC_CKN_LEN * 2] != '\0') {
+	size_t ckn_str_len = os_strlen(value);
+
+	if (ckn_str_len == 0 || (ckn_str_len & 1) == 1 ||
+		ckn_str_len > MACSEC_CKN_LEN * 2) {
+		wpa_printf(MSG_ERROR, "Line %d: Invalid size MKA-CKN '%s'.",
+			   line, value);
+		return -1;
+	}
+
+	if (hexstr2bin(value, ssid->mka_ckn, ckn_str_len / 2)) {
 		wpa_printf(MSG_ERROR, "Line %d: Invalid MKA-CKN '%s'.",
 			   line, value);
 		return -1;
