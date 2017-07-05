@@ -3396,10 +3396,6 @@ static void handle_assoc(struct hostapd_data *hapd,
 	}
 #endif /* CONFIG_IEEE80211W */
 
-	/* Make sure that the previously registered inactivity timer will not
-	 * remove the STA immediately. */
-	sta->timeout_next = STA_NULLFUNC;
-
 #ifdef CONFIG_TAXONOMY
 	taxonomy_sta_info_assoc_req(hapd, sta, pos, left);
 #endif /* CONFIG_TAXONOMY */
