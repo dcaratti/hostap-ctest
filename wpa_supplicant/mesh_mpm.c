@@ -487,13 +487,16 @@ static int mesh_mpm_plink_close(struct hostapd_data *hapd, struct sta_info *sta,
 {
 	struct wpa_supplicant *wpa_s = ctx;
 	int reason = WLAN_REASON_MESH_PEERING_CANCELLED;
+	struct mesh_conf *conf = wpa_s->ifmsh->mconf;
 
 	if (sta) {
 		wpa_mesh_set_plink_state(wpa_s, sta, PLINK_HOLDING);
+		eloop_register_timeout(conf->dot11MeshHoldingTimeout / 1000,
+			(conf->dot11MeshHoldingTimeout % 1000) * 1000,
+			plink_timer, wpa_s, sta);
 		mesh_mpm_send_plink_action(wpa_s, sta, PLINK_CLOSE, reason);
 		wpa_printf(MSG_DEBUG, "MPM closing plink sta=" MACSTR,
 			   MAC2STR(sta->addr));
-		eloop_cancel_timeout(plink_timer, wpa_s, sta);
 		return 0;
 	}
 
