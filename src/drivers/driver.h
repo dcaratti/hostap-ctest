@@ -4310,6 +4310,15 @@ enum wpa_event_type {
 	EVENT_SIGNAL_CHANGE,
 
 	/**
+	 * EVENT_INTERFACE_MAC_CHANGED - Notify that interface MAC changed
+	 *
+	 * This event is emitted when the MAC changes while the interface is
+	 * enabled. When an interface was disabled and becomes enabled, it
+	 * must be always assumed that the MAC possibly changed.
+	 */
+	EVENT_INTERFACE_MAC_CHANGED,
+
+	/**
 	 * EVENT_INTERFACE_ENABLED - Notify that interface was enabled
 	 *
 	 * This event is used to indicate that the interface was enabled after
