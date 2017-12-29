@@ -198,7 +198,7 @@ for i in 0 1 2 3 4 5 6 7 8 9; do
 done
 for i in 0 1 2; do
     for j in `seq 1 10`; do
-	if $WPACLI -g /tmp/wpas-wlan$i ping | grep -q PONG; then
+	if sudo $WPACLI -g /tmp/wpas-wlan$i ping | grep -q PONG; then
 	    break
 	fi
 	if [ $j = "10" ]; then
@@ -210,7 +210,7 @@ for i in 0 1 2; do
 done
 
 for j in `seq 1 10`; do
-    if $WPACLI -g /var/run/hostapd-global ping | grep -q PONG; then
+    if sudo $WPACLI -g /var/run/hostapd-global ping | grep -q PONG; then
 	break
     fi
     if [ $j = "10" ]; then
@@ -221,7 +221,7 @@ for j in `seq 1 10`; do
 done
 
 for j in `seq 1 10`; do
-    if $HAPDCLI -i as ping | grep -q PONG; then
+    if sudo $HAPDCLI -i as ping | grep -q PONG; then
 	break
     fi
     if [ $j = "10" ]; then
