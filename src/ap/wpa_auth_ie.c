@@ -539,6 +539,13 @@ int wpa_validate_wpa_ie(struct wpa_authenticator *wpa_auth,
 	if (version == WPA_PROTO_RSN) {
 		res = wpa_parse_wpa_ie_rsn(wpa_ie, wpa_ie_len, &data);
 
+		if (wpa_key_mgmt_ft(data.key_mgmt) && !mdie &&
+		    !wpa_key_mgmt_only_ft(data.key_mgmt)) {
+			wpa_printf(MSG_DEBUG, "RSN: FT set in AKM but MDIE is missing, "
+				   "stripping FT because there's still non-FT key mgmt available");
+			data.key_mgmt &= ~WPA_KEY_MGMT_FT;
+		}
+
 		selector = RSN_AUTH_KEY_MGMT_UNSPEC_802_1X;
 		if (0) {
 		}
