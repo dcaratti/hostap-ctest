@@ -3345,10 +3345,10 @@ retry:
 	msg = NULL;
 	if (ret) {
 		wpa_dbg(drv->ctx, MSG_DEBUG,
-			"nl80211: MLME command failed (auth): ret=%d (%s)",
-			ret, strerror(-ret));
+			"nl80211: MLME command failed (auth): count=%d ret=%d (%s)",
+			count, ret, strerror(-ret));
 		count++;
-		if (ret == -EALREADY && count == 1 && params->bssid &&
+		if (((ret == -EALREADY) || (ret == -EEXIST)) && count == 1 && params->bssid &&
 		    !params->local_state_change) {
 			/*
 			 * mac80211 does not currently accept new
