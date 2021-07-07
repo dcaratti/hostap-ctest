@@ -50,6 +50,11 @@
 #define EAP_FAST_OR_TEAP
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/provider.h>
+
+static OSSL_PROVIDER *legacy, *dflt;
+#endif /* >= 3.0.0 */
 
 #if defined(OPENSSL_IS_BORINGSSL)
 /* stack_index_t is the return type of OpenSSL's sk_XXX_num() functions. */
@@ -960,6 +965,24 @@ void * tls_init(const struct tls_config *conf)
 		tls_global = context = tls_context_new(conf);
 		if (context == NULL)
 			return NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	legacy = OSSL_PROVIDER_load(NULL, "legacy");
+	if (!legacy) {
+		wpa_printf(MSG_ERROR, "Failed to load legacy provider");
+		os_free(tls_global);
+		tls_global = NULL;
+		return NULL;
+	}
+
+	dflt = OSSL_PROVIDER_load(NULL, "default");
+	if (!dflt) {
+		wpa_printf(MSG_ERROR, "Failed to load default provider");
+		os_free(tls_global);
+		tls_global = NULL;
+		return NULL;
+	}
+#endif /* >= 3.0.0 */
+
 #ifdef CONFIG_FIPS
 #ifdef OPENSSL_FIPS
 		if (conf && conf->fips_mode) {
@@ -1137,6 +1160,13 @@ void tls_deinit(void *ssl_ctx)
 		ERR_free_strings();
 		EVP_cleanup();
 #endif /* < 1.1.0 */
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+		if (legacy)
+			OSSL_PROVIDER_unload(legacy);
+		if (dflt)
+			OSSL_PROVIDER_unload(dflt);
+#endif /* >= 3.3.0 */
+
 		os_free(tls_global->ocsp_stapling_response);
 		tls_global->ocsp_stapling_response = NULL;
 		os_free(tls_global);
