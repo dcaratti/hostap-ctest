@@ -1067,6 +1067,9 @@ void * tls_init(const struct tls_config *conf)
 
 	SSL_CTX_set_options(ssl, SSL_OP_NO_SSLv2);
 	SSL_CTX_set_options(ssl, SSL_OP_NO_SSLv3);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	SSL_CTX_set_max_proto_version(ssl, TLS1_2_VERSION);
+#endif /* >= 3.0.0 */
 
 	SSL_CTX_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 
